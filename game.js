@@ -1,11 +1,13 @@
+// git: https://github.com/starcassie/snakeGame.git
 // setup canvas
 let canvas = document.getElementById('display')
-canvas.width =  800 // document.body.clientWidth
-canvas.height = 800 // document.body.clientHeight
+let button = document.getElementById('button')
+canvas.width =  400 // document.body.clientWidth
+canvas.height = 400 // document.body.clientHeight
 let ctx = canvas.getContext('2d')
 
 // variables
-let gridSize = 40
+let gridSize = 20
 let gridWidth = Math.floor(canvas.width / gridSize)
 let gridHeight = Math.floor(canvas.height / gridSize)
 
@@ -19,6 +21,7 @@ let direction = "right"
 
 let fruit = {x: 7, y: 3}
 let score = 0
+let scoreCount = $('h1')
 
 // draws snake
 function drawSnake() {
@@ -34,8 +37,6 @@ function drawSnake() {
 function erase() {
   ctx.fillStyle = '#000044'
   ctx.fillRect(0, 0, canvas.width, canvas.height)
-  ctx.fillStyle = 'white'
-  ctx.strokeRect(0, 0, gridSize, gridSize)
 }
 function drawSquare(x, y) {
   ctx.fillStyle = 'green'
@@ -59,7 +60,6 @@ function drawCircle(x, y) {
 
 // user input
 window.addEventListener('keydown', event => {
-  console.log(event.code)
   if (event.code === "ArrowRight" && direction !== "left") {
   	direction = "right"
   } else if(event.code === "ArrowLeft" && direction !== "right") {
@@ -97,7 +97,14 @@ function moveSnake() {
 function newFruit() {
 	let x = Math.floor(Math.random() * canvas.width / gridSize)
 	let y = Math.floor(Math.random() * canvas.width / gridSize)
-	return {x: x, y: y}
+	let val = {x: x, y: y}
+	for (let i = 1; i < snake.length; i++) {
+		if(x === snake[i].x && y === snake[i].y) {
+			val = newFruit()
+			break
+		}
+	}
+	return val
 }
 
 // check eating
@@ -105,24 +112,31 @@ function checkEating() {
 	if (snake[0].x === fruit.x && snake[0].y === fruit.y) {
 		eraseFood(fruit.x, fruit.y)
 		drawHead(fruit.x, fruit.y)
-		console.log("on")
 		fruit = newFruit()
 		drawCircle(fruit.x, fruit.y)
-		console.log(fruit)
 		score += 1
-		console.log(score)
+		let end = {x: snake[snake.length - 1].x, y: snake[snake.length - 1].y}
+		snake.push(end)
+		scoreCount.text("score: " + score)
 	}
 }
 
 // check out of bounds
 function checkOut() {
-	if(snake[0].x === 20 || snake[0].x === -1 || snake[0].y === 20 || snake[0].y === -1) {
-		console.log("game over")
+	if (snake[0].x === 20 || snake[0].x === -1 || snake[0].y === 20 || snake[0].y === -1) {
+		scoreCount.text("game over! FINAL score: " + score)
+		button.classList.toggle('hide')
 		return true
+	}
+	for (let i = 1; i < snake.length; i++) {
+		if(snake[0].x === snake[i].x && snake[0].y === snake[i].y) {
+			scoreCount.text("game over! FINAL score: " + score)
+			button.classList.toggle('hide')
+			return true
+		}
 	}
 	return false
 }
-
 
 // game loop
 function loop() {
@@ -135,8 +149,19 @@ function loop() {
 		clearInterval(intervalID)
 	}
 }
-var intervalID = window.setInterval(loop, 500)
 
-// array of objects - storing x and y properties
-// go through the values of the array and draw the square and then draw the head
-// direction + add in the current direction then pop off the last
+var intervalID = window.setInterval(loop, 100)
+
+function playAgain() {
+	button.classList.toggle('hide')
+	snake = [{x: 5, y:3},
+			 {x: 4, y: 3},
+			 {x: 3, y: 3},
+			 {x:3, y: 2}]
+	direction = "right"
+	fruit = {x: 7, y: 3}
+	score = 0
+	intervalID = window.setInterval(loop, 100)
+}
+
+button.addEventListener("click", playAgain)
