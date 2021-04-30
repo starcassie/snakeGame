@@ -2,6 +2,8 @@
 // setup canvas
 let canvas = document.getElementById('display')
 let button = document.getElementById('button')
+let scoreCount = $('h1')
+let highScoreCount = $('h2')
 canvas.width =  400 // document.body.clientWidth
 canvas.height = 400 // document.body.clientHeight
 let ctx = canvas.getContext('2d')
@@ -21,7 +23,8 @@ let direction = "right"
 
 let fruit = {x: 7, y: 3}
 let score = 0
-let scoreCount = $('h1')
+let highScore = 0
+let intervalTime = 200
 
 // draws snake
 function drawSnake() {
@@ -35,24 +38,24 @@ function drawSnake() {
 
 // draw helpers
 function erase() {
-  ctx.fillStyle = '#000044'
+  ctx.fillStyle = '#08415C'
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 }
 function drawSquare(x, y) {
-  ctx.fillStyle = 'green'
+  ctx.fillStyle = '#BBD0DD'
   ctx.fillRect(x * gridSize, y * gridSize, gridSize, gridSize)
 }
 function eraseFood(x, y) {
   ctx.clearRect(x * gridSize, y * gridSize, gridSize, gridSize)
-  ctx.fillStyle = '#000044'
+  ctx.fillStyle = '#08415C'
   ctx.fillRect(x * gridSize, y * gridSize, gridSize, gridSize)
 }
 function drawHead(x, y) {
-  ctx.fillStyle = 'darkgreen'
+  ctx.fillStyle = '#78A1BB'
   ctx.fillRect(x * gridSize, y * gridSize, gridSize, gridSize)
 }
 function drawCircle(x, y) {
-  ctx.fillStyle = 'red'
+  ctx.fillStyle = '#C82D4C'
   ctx.beginPath()
   ctx.arc(x * gridSize + gridSize / 2, y * gridSize + gridSize / 2, gridSize / 2, 0, 2 * Math.PI)
   ctx.fill()
@@ -124,14 +127,10 @@ function checkEating() {
 // check out of bounds
 function checkOut() {
 	if (snake[0].x === 20 || snake[0].x === -1 || snake[0].y === 20 || snake[0].y === -1) {
-		scoreCount.text("game over! FINAL score: " + score)
-		button.classList.toggle('hide')
 		return true
 	}
 	for (let i = 1; i < snake.length; i++) {
 		if(snake[0].x === snake[i].x && snake[0].y === snake[i].y) {
-			scoreCount.text("game over! FINAL score: " + score)
-			button.classList.toggle('hide')
 			return true
 		}
 	}
@@ -146,11 +145,21 @@ function loop() {
 	checkEating()
 	moveSnake()
 	if (checkOut()) {
+		scoreCount.text("game over! FINAL score: " + score)
+		button.classList.toggle('hide')
+		if (highScore < score) {
+			highScore = score
+			highScoreCount.text("high score: " + highScore + " *new*")
+		}
 		clearInterval(intervalID)
+	}
+	else if (score > 10 && score <=25) {
+		clearInterval(intervalID)
+		intervalID = window.setInterval(loop, intervalTime - score * 5)
 	}
 }
 
-var intervalID = window.setInterval(loop, 100)
+var intervalID = window.setInterval(loop, intervalTime)
 
 function playAgain() {
 	button.classList.toggle('hide')
@@ -161,7 +170,8 @@ function playAgain() {
 	direction = "right"
 	fruit = {x: 7, y: 3}
 	score = 0
-	intervalID = window.setInterval(loop, 100)
+	highScoreCount.text("high score: " + highScore)
+	intervalID = window.setInterval(loop, intervalTime)
 }
 
 button.addEventListener("click", playAgain)
